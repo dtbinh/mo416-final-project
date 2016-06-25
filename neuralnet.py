@@ -12,12 +12,16 @@ class NeuralNet:
         self.net = None
         self.data_set = None
         self.trainer = None
+        self.inputs = None
+        self.targets = None
 
     def build(self, inputs, hidden, output):
+        self.inputs = inputs
+        self.targets = output
         self.net = buildNetwork(inputs, hidden, output)
 
-    def create_data_set(self, inputs, targets):
-        self.data_set = SupervisedDataSet(inputs, targets)
+    def create_data_set(self):
+        self.data_set = SupervisedDataSet(self.inputs, self.targets)
 
     def add_list_of_data(self, list_of_data, data_class):
         for dt in list_of_data:
@@ -29,6 +33,7 @@ class NeuralNet:
         iteration = 0
         while error > 0.001:
             error = self.trainer.train()
+            print "Iteration: {0} Error {1}".format(iteration, error)
             iteration += 1
 
     def save_training_to_file(self, filename):
@@ -38,3 +43,6 @@ class NeuralNet:
     def load_net_from_file(self, filename):
         with open(filename, 'r') as f:
             self.net = pickle.load(f)
+
+    def apply_over_data(self, data):
+        return self.net.activate(data)
