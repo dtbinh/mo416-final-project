@@ -36,11 +36,11 @@ class NeuralNet:
             print "Iteration: {0} Error {1}".format(iteration, error)
             iteration += 1
 
-    def save_training_to_file(self, filename):
+    def save_to_file(self, filename):
         with open(filename, 'w') as f:
             pickle.dump(self.net, f)
 
-    def load_net_from_file(self, filename):
+    def load_from_file(self, filename):
         with open(filename, 'r') as f:
             self.net = pickle.load(f)
 

@@ -19,4 +19,4 @@ if __name__ == "__main__":
     neural_net.add_list_of_data([features_green], 3)
     neural_net.train()
 
-    print neural_net.apply_over_data(features_green)
+    print neural_net.apply_over_data(features_yellow)
