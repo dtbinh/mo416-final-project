@@ -36,7 +36,7 @@ if __name__ == "__main__":
     trainer = BackpropTrainer(net, ds)
     error = 10
     iteration = 0
-    while error > 0.001:
+    while error > 0.012:
         error = trainer.train()
         iteration += 1
         print "Iteration: {0} Error {1}".format(iteration, error)

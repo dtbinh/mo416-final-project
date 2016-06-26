@@ -18,7 +18,7 @@ class NeuralNet:
     def build(self, inputs, hidden, output):
         self.inputs = inputs
         self.targets = output
-        self.net = buildNetwork(inputs, hidden, output)
+        self.net = buildNetwork(inputs, hidden, output, bias=True)
 
     def create_data_set(self):
         self.data_set = SupervisedDataSet(self.inputs, self.targets)
@@ -28,10 +28,11 @@ class NeuralNet:
             self.data_set.addSample(dt, data_class)
 
     def train(self):
-        self.trainer = BackpropTrainer(self.net, self.data_set)
+        self.trainer = BackpropTrainer(self.net, self.data_set, learningrate=0.05)
         error = 10000
         iteration = 0
-        while error > 0.001:
+        # while error > 0.001:
+        while error > 0.15:
             error = self.trainer.train()
             print "Iteration: {0} Error {1}".format(iteration, error)
             iteration += 1
