@@ -5,6 +5,9 @@ import vrep,time,sys
 import motion
 import time
 import array
+import numpy
+import matplotlib.pyplot as plt
+from stage_recognizer import StageRecognizer
 from PIL import Image as I
 from naoqi import ALProxy
 	
@@ -42,9 +45,6 @@ def StiffnessOn(proxy):
     pTimeLists = 1.0
     proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
-def get_traffic_light_state(im):
-    return 'Green'
-
 def main(robotIP, robotPort):
     # Init proxies.
     try:
@@ -61,24 +61,34 @@ def main(robotIP, robotPort):
 
 	#INIT V-REP IMAGE SENSOR	
     vrep.simxFinish(-1)
-    clientID=vrep.simxStart('127.0.0.2',19999,True,True,5000,5)
+    clientID=vrep.simxStart('127.0.0.2',19998,True,True,5000,5)
     if clientID!=-1:
         print('Connected to remote API server')
         #Get and display the pictures from the camera
         #Get the handle of the vision sensor
         res1,visionSensorHandle=vrep.simxGetObjectHandle(clientID,'NAO_vision1',vrep.simx_opmode_oneshot_wait)
         #Get the image
-        res2,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_buffer)
-		
-		#Get the traffic light handle
-        res3,trafficLightHandle=vrep.simxGetObjectHandle(clientID,'Semaforo',vrep.simx_opmode_oneshot_wait)
+        res2,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_streaming)
+        #Allow the display to be refreshed
+        plt.ion()
+        #Initialiazation of the figure
+        res,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_buffer)
         time.sleep(1)
+        im = I.new("RGB", (640,480), "white")
+        #Give a title to the figure
+        fig = plt.figure(1)    
+        fig.canvas.set_window_title('NAO_vision1')
+        #inverse the picture
+        plotimg = plt.imshow(im,origin='lower')
 		
     # Set NAO in Stiffness On
     StiffnessOn(motionProxy)
 
     # Send NAO to Pose Init
     postureProxy.goToPosture("StandInit", 0.5)
+	
+    ## Initilize the StageRecognizer
+    rec = StageRecognizer('trained_net_0_15.bin')
 
     #####################
     ## Enable arms control by Walk algorithm
@@ -91,41 +101,48 @@ def main(robotIP, robotPort):
     #####################
     #~ motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", False]])
     motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", True]])
-
-    #START WALKING AT MAX SPEED
-    X = 0.8
-    Y = 0.0
-    Theta = 0.0
-    Frequency =1.0 # max speed
-    motionProxy.setWalkTargetVelocity(X, Y, Theta, Frequency)
     
-    i = 0;
-    
+    NAO_state = 'stop'
 	#WHILE THE TRAFFIC LIGHT IS GREEN, KEEP WALKING
 	#IF THE TRAFFIC LIGHT IS YELLOW, REDUCE SPEED
 	#IF THE TRAFFIC LIGHT IR RED, STOP AND ONLY PROCEED TO WALK WHEN IT IS GREEN AGAIN
     print "Starting the main loop"
     while (vrep.simxGetConnectionId(clientID)!=-1):
-        i = i + 1
-        #Get the image of the vision sensor
-        res,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_oneshot_wait)
+        #Get the image from the vision sensor
+        res,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_buffer)
+        time.sleep(1)
         #Transform the image so it can be displayed using pyplot
-        #image_byte_array = array.array('b',image)
-        #im = I.frombuffer("RGB", (640,480), image_byte_array, "raw", "RGB", 0, 1)
+        image_byte_array = array.array('b',image)
+        im = I.frombuffer("RGB", (640,480), image_byte_array, "raw", "RGB", 0, 1)
+        #infile = 'D:\_dev\mo416-final-project\Images\Semaforo_verde\img_2016-06-26-11-17-14.png'
+        #pil_image = I.open(infile)
+        #Update the image
+        plotimg.set_data(im)
+        #Refresh the display
+        plt.draw()
+        #The mandatory pause ! (or it'll not work)
+        plt.pause(0.001)
         
 		#ROTATE THE IMAGE - IT IS UPSIDE DOWN
-        #rotated_im = im.transpose(I.ROTATE_180)
-        #traffic_light = get_traffic_light_state(im)
-        if i % 3 == 0:
+        pil_image = im.transpose(I.ROTATE_180)
+        open_cv_image = numpy.array(pil_image) 
+        # Convert RGB to BGR 
+        open_cv_image = open_cv_image[:, :, ::-1].copy()
+        color, precision = rec.recognize_image(open_cv_image)
+        print 'Color:' + color + ' / Precision:' + precision
+		
+        if color == 'yellow' and NAO_state != 'slowdown':
             SlowDown(motionProxy)
+            NAO_state = 'slowdown'
         
-        if i % 7 == 0:
-		    Stop(motionProxy)
+        if color == 'red' and NAO_state != 'stop':
+            Stop(motionProxy)
+            NAO_state = 'stop'
 		
-        if i % 11 == 0:
-		    Walk(motionProxy)
+        if color == 'green' and NAO_state != 'walking':
+            Walk(motionProxy)
+            NAO_state = 'walking'
 		
-        time.sleep(1)
 		#if (traffic_light == 'Green'):
         #   Walk(motionProxy)
 		#else:
