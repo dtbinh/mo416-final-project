@@ -28,11 +28,10 @@ class NeuralNet:
             self.data_set.addSample(dt, data_class)
 
     def train(self):
-        self.trainer = BackpropTrainer(self.net, self.data_set, learningrate=0.05)
+        self.trainer = BackpropTrainer(self.net, self.data_set, learningrate=0.01)
         error = 10000
         iteration = 0
-        # while error > 0.001:
-        while error > 0.15:
+        while error > 0.001:
             error = self.trainer.train()
             print "Iteration: {0} Error {1}".format(iteration, error)
             iteration += 1

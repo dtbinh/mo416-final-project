@@ -1,5 +1,5 @@
 from neuralnet import NeuralNet
-from extractfeatures import extract_hist_features
+from extractfeatures import extract_counter_feat
 
 
 class StageRecognizer():
@@ -8,7 +8,7 @@ class StageRecognizer():
         self.net.load_from_file(trained_net_path)
 
     def recognize_image(self, img):
-        net_return = self.net.apply_over_data(extract_hist_features(img))
+        net_return = self.net.apply_over_data(extract_counter_feat(img))
         stage_number = int(round(net_return))
         stage = ''
         precision = 'strong'

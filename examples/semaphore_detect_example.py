@@ -5,7 +5,7 @@ import cv2
 
 if __name__ == "__main__":
 
-    stage_recognizer = StageRecognizer("../trained_net_0_15.bin")
+    stage_recognizer = StageRecognizer("../trained_net.bin")
 
     # Determine stage from single image
     img = cv2.imread("../Images/Semaforo_amarelo/renamed/0004.png", cv2.CV_LOAD_IMAGE_COLOR)
