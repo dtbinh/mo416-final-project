@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="defaultmoves-f80eab">
+ <names>
+  <name lang="en_US">Default moves</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+  <language>pt_BR</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+  <language>pt_BR</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="behavior_1">
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

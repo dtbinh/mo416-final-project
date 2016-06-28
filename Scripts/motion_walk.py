@@ -32,10 +32,10 @@ def Stop(motionProxy):
 def SlowDown(motionProxy):
     #START WALKING SLOW
     print "Slowing Down!!"
-    X = 0.8
+    X = 0.2
     Y = 0.0
     Theta = 0.0
-    Frequency =0.5 # half speed
+    Frequency =0.1 # half speed
     motionProxy.setWalkTargetVelocity(X, Y, Theta, Frequency)
 
 def StiffnessOn(proxy):
@@ -70,16 +70,16 @@ def main(robotIP, robotPort):
         #Get the image
         res2,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_streaming)
         #Allow the display to be refreshed
-        plt.ion()
+        #plt.ion()
         #Initialiazation of the figure
         res,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_buffer)
         time.sleep(1)
         im = I.new("RGB", (640,480), "white")
         #Give a title to the figure
-        fig = plt.figure(1)    
-        fig.canvas.set_window_title('NAO_vision1')
+        #fig = plt.figure(1)    
+        #fig.canvas.set_window_title('NAO_vision1')
         #inverse the picture
-        plotimg = plt.imshow(im,origin='lower')
+        #plotimg = plt.imshow(im,origin='lower')
 		
     # Set NAO in Stiffness On
     StiffnessOn(motionProxy)
@@ -88,7 +88,7 @@ def main(robotIP, robotPort):
     postureProxy.goToPosture("StandInit", 0.5)
 	
     ## Initilize the StageRecognizer
-    rec = StageRecognizer('trained_net_0_15.bin')
+    rec = StageRecognizer('trained_net.bin')
 
     #####################
     ## Enable arms control by Walk algorithm
@@ -110,18 +110,18 @@ def main(robotIP, robotPort):
     while (vrep.simxGetConnectionId(clientID)!=-1):
         #Get the image from the vision sensor
         res,resolution,image=vrep.simxGetVisionSensorImage(clientID,visionSensorHandle,0,vrep.simx_opmode_buffer)
-        time.sleep(1)
+        time.sleep(0.5)
         #Transform the image so it can be displayed using pyplot
         image_byte_array = array.array('b',image)
         im = I.frombuffer("RGB", (640,480), image_byte_array, "raw", "RGB", 0, 1)
         #infile = 'D:\_dev\mo416-final-project\Images\Semaforo_verde\img_2016-06-26-11-17-14.png'
         #pil_image = I.open(infile)
         #Update the image
-        plotimg.set_data(im)
+        #plotimg.set_data(im)
         #Refresh the display
-        plt.draw()
+        #plt.draw()
         #The mandatory pause ! (or it'll not work)
-        plt.pause(0.001)
+        #plt.pause(0.001)
         
 		#ROTATE THE IMAGE - IT IS UPSIDE DOWN
         pil_image = im.transpose(I.ROTATE_180)
